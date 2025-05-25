@@ -15,29 +15,38 @@ Twitch Line Bot is an automated notification system that alerts a LINE group whe
 ```bash
 git clone https://github.com/your-username/twitch-line-bot.git
 cd twitch-line-bot
-
+```
 ### **2. Install Dependencies**
+```bash
 pip install -r requirements.txt
+```
 ### **3. Set Up Environment Variables**
+```bash
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_ACCESS_TOKEN=your_twitch_access_token
 CALLBACK_URL=https://your-domain.com/webhook
 LINE_ACCESS_TOKEN=your_line_channel_token
 GROUP_ID=your_line_group_id
+```
 ### **4. Run Webhook Server**
+```bash
 python webhook.py
+```
 ### **5. Subscribe to Twitch EventSub**
+```bash
 python subscribe.py
-
+```
 ### **6. Docker Deployment**
+```bash
 docker build -t twitch-line-bot .
 docker run -d -p 8080:8080 --env-file .env twitch-line-bot
+```
 
-##Usage
+## Usage
 Once deployed, the bot will automatically send LINE notifications when a Twitch streamer goes live.
 Future Enhancements
 - ✅ Support multiple streamers
 - ✅ Add rich media notifications (stream thumbnail, title, etc.)
 - ✅ Implement a web dashboard for managing subscriptions
-##License
+## License
 MIT License
