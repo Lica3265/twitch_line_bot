@@ -81,6 +81,7 @@ LINE_ACCESS_TOKEN=your_line_channel_token
 GROUP_ID=your_line_group_id
 ```
 🔹 取得方式：使用 LINE Bot 向群組發送訊息，然後在 Webhook 內解析 `groupId`
+
 📌 你也可以透過 LINE API 取得 `groupId`
 
 
