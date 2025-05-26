@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Twitch 訂閱管理</title>
     <link rel="stylesheet" href="static/style.css"> <!-- ✅ 引入外部 CSS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- ✅ 引入 jQuery -->
 </head>
 <body>
 
@@ -13,8 +14,8 @@
             {% for streamer in streamers %}
                 <li class="streamer-item">
                     <a href="https://www.twitch.tv/{{ streamer }}" target="_blank">{{ streamer }}</a>
-                    <form action="/unsubscribe" method="POST">
-                        <input type="hidden" name="broadcaster_id" value="{{ streamer }}">
+                    <form action="/unsubscribe" method="POST" class="unsubscribe-form">
+                        <input type="hidden" name="broadcaster_username" value="{{ streamer }}">
                         <button type="submit" class="unsubscribe-btn">取消訂閱</button>
                     </form>
                 </li>
@@ -22,12 +23,56 @@
         </ul>
 
         <h2>📌 訂閱新的 Twitch 實況主</h2>
-        <form action="/subscribe" method="POST" class="subscribe-form">
-            <label>🔹 實況主 ID：</label>
-            <input type="text" name="broadcaster_id" required placeholder="輸入 Twitch ID">
-            <button type="submit" class="subscribe-btn">訂閱</button>
+        <form class="subscribe-form">
+            <label>🔹 Twitch 使用者名稱：</label>
+            <input type="text" name="broadcaster_username" required placeholder="輸入 Twitch 使用者名稱">
+            <button type="submit">訂閱</button>
         </form>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            // ✅ 訂閱 Twitch 頻道
+            $(".subscribe-form").submit(function(event) {
+                event.preventDefault();
+                let username = $(this).find("input[name='broadcaster_username']").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/subscribe",
+                    contentType: "application/json",
+                    data: JSON.stringify({ broadcaster_username: username }),
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert("❌ 訂閱失敗：" + xhr.responseJSON.message);
+                    }
+                });
+            });
+
+            // ✅ 取消訂閱
+            $(".unsubscribe-form").submit(function(event) {
+                event.preventDefault();
+                let username = $(this).find("input[name='broadcaster_username']").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/unsubscribe",
+                    contentType: "application/json",
+                    data: JSON.stringify({ broadcaster_username: username }),
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert("❌ 取消訂閱失敗：" + xhr.responseJSON.message);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>

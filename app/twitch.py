@@ -17,5 +17,12 @@ def subscribe_twitch_webhook(broadcaster_id):
     }
     response = requests.post("https://api.twitch.tv/helix/eventsub/subscriptions", headers=headers, json=data)
     return response.json()
-
-print(subscribe_twitch_webhook("實況主ID"))
+def get_broadcaster_id(username):
+    """ 使用 Twitch API 取得使用者的數字 ID """
+    headers = {
+        "Client-ID": os.getenv("TWITCH_CLIENT_ID"),
+        "Authorization": f"Bearer {os.getenv('TWITCH_ACCESS_TOKEN')}",
+    }
+    response = requests.get(f"https://api.twitch.tv/helix/users?login={username}", headers=headers)
+    data = response.json()
+    return data["data"][0]["id"] if "data" in data and data["data"] else None

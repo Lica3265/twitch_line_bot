@@ -26,33 +26,45 @@ def get_streamer_name(broadcaster_id):
 
 @app.route("/unsubscribe", methods=["POST"])
 def unsubscribe_streamer():
-    data = request.form
-    broadcaster_id = data.get("broadcaster_id")
+    """ 取消 Twitch 訂閱 (使用實況主名稱查詢 ID) """
+    data = request.get_json()
+    if not data or "broadcaster_username" not in data:
+        return jsonify({"status": "error", "message": "缺少 Twitch 使用者名稱"}), 400
 
-    if broadcaster_id:
-        headers = {
-            "Client-ID": config.TWITCH_CLIENT_ID,
-            "Authorization": f"Bearer {config.TWITCH_ACCESS_TOKEN}"
-        }
+    broadcaster_username = data["broadcaster_username"]
+    broadcaster_id = str(twitch.get_broadcaster_id(broadcaster_username))
+    print(f"🔍 {broadcaster_username} 的 broadcaster_id: {broadcaster_id}")
 
-        # ✅ 先查詢目前的 Webhook 訂閱 ID
-        response = requests.get("https://api.twitch.tv/helix/eventsub/subscriptions", headers=headers)
+    if not broadcaster_id:
+        return jsonify({"status": "error", "message": f"無法獲取 {broadcaster_username} 的數字 ID"}), 400
+
+    headers = {
+        "Client-ID": config.TWITCH_CLIENT_ID,
+        "Authorization": f"Bearer {config.TWITCH_ACCESS_TOKEN}"
+    }
+
+    response = requests.get("https://api.twitch.tv/helix/eventsub/subscriptions", headers=headers)
+    try:
         subscriptions = response.json().get("data", [])
+    except Exception as e:
+        print(f"❌ 無法解析 Twitch 訂閱列表: {e}")
+        return jsonify({"status": "error", "message": "無法獲取訂閱列表"}), 500
 
-        # ✅ 找到對應的 `broadcaster_id`
-        for sub in subscriptions:
-            if sub["type"] == "stream.online" and sub["condition"]["broadcaster_user_id"] == broadcaster_id:
-                sub_id = sub["id"]
+    for sub in subscriptions:
+        if sub["type"] == "stream.online" and sub["condition"]["broadcaster_user_id"] == broadcaster_id:
+            sub_id = sub["id"]
 
-                # ✅ 取消 Webhook 訂閱
-                delete_response = requests.delete(f"https://api.twitch.tv/helix/eventsub/subscriptions?id={sub_id}", headers=headers)
-                
-                if delete_response.status_code == 204:  # Twitch 成功刪除訂閱
-                    subscribed_streamers.remove(broadcaster_id)  # ✅ 從本地清單移除
-                    return jsonify({"status": "success", "message": f"已取消訂閱 {broadcaster_id}"}), 200
+            delete_response = requests.delete(f"https://api.twitch.tv/helix/eventsub/subscriptions?id={sub_id}", headers=headers)
+            if delete_response.status_code == 204:
+                if broadcaster_username in subscribed_streamers:
+                    subscribed_streamers.remove(broadcaster_username)
+                print(f"✅ 成功取消訂閱 {broadcaster_username}")
+                return jsonify({"status": "success", "message": f"已取消訂閱 {broadcaster_username}"}), 200
+            else:
+                print(f"❌ 取消訂閱失敗：{delete_response.status_code}, {delete_response.text}")
+                return jsonify({"status": "error", "message": "取消訂閱失敗"}), 400
 
-    return jsonify({"status": "error", "message": "取消訂閱失敗"}), 400
-
+    return jsonify({"status": "error", "message": f"找不到 {broadcaster_username} 的訂閱，可能未訂閱"}), 400
 # ✅ 啟動 Flask 時，自動載入已訂閱的 Twitch 頻道
 def load_subscriptions():
     headers = {
@@ -94,18 +106,23 @@ def show_subscriptions():
 
 @app.route("/subscribe", methods=["POST"])
 def subscribe_streamer():
+    """ 訂閱 Twitch Webhook """
     data = request.json
-    broadcaster_id = data.get("broadcaster_id")
+    if not data or "broadcaster_username" not in data:
+        return jsonify({"status": "error", "message": "缺少 Twitch 使用者名稱"}), 400
 
-    if broadcaster_id:
-        response = twitch.subscribe_twitch_webhook(broadcaster_id)
-        if response.get("data"):
-            channel_name = get_streamer_name(broadcaster_id)
-            if channel_name:
-                subscribed_streamers.append(channel_name)  # ✅ 儲存新的訂閱
-                return jsonify({"status": "success", "message": f"已訂閱 {channel_name}"}), 200
+    broadcaster_username = data["broadcaster_username"]
+    broadcaster_id = twitch.get_broadcaster_id(broadcaster_username)
+    if not broadcaster_id:
+        return jsonify({"status": "error", "message": f"無法獲取 {broadcaster_username} 的數字 ID"}), 400
 
-    return jsonify({"status": "error", "message": "訂閱失敗"}), 400
+    success = twitch.subscribe_twitch_webhook(broadcaster_id)
+    if success:
+        subscribed_streamers.append(broadcaster_username)
+        return jsonify({"status": "success", "message": f"已訂閱 {broadcaster_username}"}), 200
+    else:
+        return jsonify({"status": "error", "message": "訂閱失敗"}), 400
+
 
 if __name__ == "__main__":
     load_subscriptions()  # ✅ 啟動時自動查詢 Webhook 訂閱

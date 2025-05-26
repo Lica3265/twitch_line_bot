@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "🔄 啟動 Ngrok 隧道..."
-start ngrok http 8080 > NUL 2>&1  # ✅ Windows 正確啟動 Ngrok
+start ngrok http 8080   # ✅ Windows 正確啟動 Ngrok
 
 # ✅ 嘗試獲取 Ngrok URL
 NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4)
