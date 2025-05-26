@@ -2,27 +2,32 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>已訂閱的 Twitch 實況主</title>
+    <title>Twitch 訂閱管理</title>
+    <link rel="stylesheet" href="static/style.css"> <!-- ✅ 引入外部 CSS -->
 </head>
 <body>
-    <h1>目前已訂閱的 Twitch 實況主</h1>
-    <ul>
-        {% for streamer in streamers %}
-            <li>
-                <a href="https://www.twitch.tv/{{ streamer }}">{{ streamer }}</a>
-                <form action="/unsubscribe" method="POST" style="display:inline;">
-                    <input type="hidden" name="broadcaster_id" value="{{ streamer }}">
-                    <button type="submit">取消訂閱</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
 
-    <h2>訂閱新的 Twitch 實況主</h2>
-    <form action="/subscribe" method="POST">
-        <label>實況主 ID：</label>
-        <input type="text" name="broadcaster_id" required>
-        <button type="submit">訂閱</button>
-    </form>
+    <div class="container">
+        <h1>🎥 已訂閱的 Twitch 實況主</h1>
+        <ul class="streamer-list">
+            {% for streamer in streamers %}
+                <li class="streamer-item">
+                    <a href="https://www.twitch.tv/{{ streamer }}" target="_blank">{{ streamer }}</a>
+                    <form action="/unsubscribe" method="POST">
+                        <input type="hidden" name="broadcaster_id" value="{{ streamer }}">
+                        <button type="submit" class="unsubscribe-btn">取消訂閱</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h2>📌 訂閱新的 Twitch 實況主</h2>
+        <form action="/subscribe" method="POST" class="subscribe-form">
+            <label>🔹 實況主 ID：</label>
+            <input type="text" name="broadcaster_id" required placeholder="輸入 Twitch ID">
+            <button type="submit" class="subscribe-btn">訂閱</button>
+        </form>
+    </div>
+
 </body>
 </html>

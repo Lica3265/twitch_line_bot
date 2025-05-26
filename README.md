@@ -61,7 +61,7 @@ TWITCH_CLIENT_SECRET=your_twitch_client_secret
 ```
 TWITCH_ACCESS_TOKEN=your_twitch_access_token
 ```
-🔹 取得方式：使用 Twitch OAuth API 進行身份驗證，獲取 `Access Token`
+🔹 取得方式：使用 Twitch OAuth API 進行身份驗證，獲取 `Access Token` 要記得用戶端類型用機密不然不會有用戶端密碼
 📌 可以透過 `curl` 或 `requests` 請求 Twitch OAuth 來生成：
 ```
 curl -X POST "https://id.twitch.tv/oauth2/token" -d "client_id=<你的 TWITCH_CLIENT_ID>&client_secret=<你的 TWITCH_CLIENT_SECRET>&grant_type=client_credentials"
