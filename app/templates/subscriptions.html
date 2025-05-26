@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>已訂閱的 Twitch 實況主</title>
+</head>
+<body>
+    <h1>目前已訂閱的 Twitch 實況主</h1>
+    <ul>
+        {% for streamer in streamers %}
+            <li>
+                <a href="https://www.twitch.tv/{{ streamer }}">{{ streamer }}</a>
+                <form action="/unsubscribe" method="POST" style="display:inline;">
+                    <input type="hidden" name="broadcaster_id" value="{{ streamer }}">
+                    <button type="submit">取消訂閱</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>訂閱新的 Twitch 實況主</h2>
+    <form action="/subscribe" method="POST">
+        <label>實況主 ID：</label>
+        <input type="text" name="broadcaster_id" required>
+        <button type="submit">訂閱</button>
+    </form>
+</body>
+</html>
